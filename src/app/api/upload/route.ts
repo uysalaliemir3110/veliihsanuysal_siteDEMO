@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
       .webp({ quality: 82 })
       .toBuffer();
 
-    // Production (Vercel): upload to Vercel Blob
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+    // Production (Vercel): upload to Vercel Blob (via OIDC or token)
+    if (process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID) {
       const { put } = await import("@vercel/blob");
       const blob = await put(`uploads/${safeName}`, compressed, {
         access: "public",
