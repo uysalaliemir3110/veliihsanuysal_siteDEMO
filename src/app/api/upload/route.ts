@@ -3,6 +3,7 @@ import { verifySession } from "@/lib/auth";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 import { randomBytes } from "crypto";
+import sharp from "sharp";
 
 export async function POST(request: NextRequest) {
   const authenticated = await verifySession();
@@ -26,11 +27,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const safeName = `${Date.now()}-${randomBytes(6).toString("hex")}.${ext}`;
-    const bytes = new Uint8Array(await file.arrayBuffer());
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const safeName = `${Date.now()}-${randomBytes(6).toString("hex")}.webp`;
     const uploadDir = join(process.cwd(), "public", "uploads");
-    await writeFile(join(uploadDir, safeName), bytes);
+
+    // Resize to max 2400px on longest side, convert to WebP at 82% quality
+    await sharp(bytes)
+      .resize(2400, 2400, { fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toFile(join(uploadDir, safeName));
 
     return NextResponse.json({ url: `/uploads/${safeName}` });
   } catch {

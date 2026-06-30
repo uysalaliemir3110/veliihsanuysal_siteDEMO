@@ -15,6 +15,10 @@
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);
@@ -93,3 +97,87 @@ img {
   animation: fadeUp 0.8s ease 0.4s forwards;
   opacity: 0;
 }
+
+/* Nav: inline Work/Contact on desktop, plus-dropdown on mobile (pure CSS toggle) */
+.nav-toggle-checkbox {
+  display: none;
+}
+.nav-mobile-plus {
+  display: none;
+}
+.nav-mobile-panel {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  background: #ffffff;
+  border-top: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  z-index: 60;
+}
+
+@media (max-width: 767px) {
+  .nav-inner {
+    padding-right: 12px;
+  }
+  .nav-desktop-link {
+    display: none;
+  }
+  .nav-mobile-plus {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+}
+
+/* When the hidden checkbox is checked, reveal the panel and turn + into × */
+.nav-toggle-checkbox:checked ~ .nav-mobile-panel {
+  display: block;
+}
+.nav-mobile-plus svg {
+  transition: transform 0.2s ease;
+}
+.nav-toggle-checkbox:checked ~ div .nav-mobile-plus svg {
+  transform: rotate(45deg);
+}
+
+/* Cover overlay: hidden by default. Desktop reveals on hover; mobile reveals on first tap. */
+.cover-toggle {
+  display: none;
+}
+.cover-overlay {
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+/* Desktop (has a real pointer): hover reveals the name, single click opens the project. */
+@media (hover: hover) {
+  .group:hover .cover-overlay {
+    opacity: 1;
+  }
+  /* The tap target is mobile-only — never let it intercept clicks on desktop. */
+  .cover-tap-target {
+    display: none;
+  }
+}
+
+/* Mobile (no hover): an invisible label sits over the cover and catches the first tap. */
+@media (hover: none) {
+  .cover-tap-target {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    cursor: pointer;
+  }
+  /* First tap checks the box → reveal the name overlay... */
+  .cover-toggle:checked ~ .cover-link .cover-overlay {
+    opacity: 1;
+  }
+  /* ...and removes the tap target so the second tap passes through to the link and opens it. */
+  .cover-toggle:checked ~ .cover-tap-target {
+    display: none;
+  }
+}
+

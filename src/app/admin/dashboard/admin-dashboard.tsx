@@ -8,6 +8,7 @@ interface GalleryImage {
   url: string;
   altText: string;
   order: number;
+  layout: "wide" | "column";
 }
 
 interface Project {
@@ -26,7 +27,6 @@ interface Project {
 const EMPTY_FORM = {
   title: "",
   client: "",
-  category: "",
   description: "",
   coverImage: "",
   date: "",
@@ -82,6 +82,19 @@ export default function AdminDashboard() {
     }
   }, [router]);
 
+  async function handleReorder(reordered: Project[]) {
+    setProjects(reordered);
+    try {
+      await fetch("/api/works/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: reordered.map((p) => p.id) }),
+      });
+    } catch {
+      setError("Failed to save order");
+    }
+  }
+
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
@@ -100,7 +113,6 @@ export default function AdminDashboard() {
     setForm({
       title: project.title,
       client: project.client ?? "",
-      category: project.category ?? "",
       description: project.description ?? "",
       coverImage: project.coverImage ?? "",
       date: project.date ? project.date.slice(0, 10) : "",
@@ -112,6 +124,7 @@ export default function AdminDashboard() {
         url: img.url,
         altText: img.altText ?? "",
         order: img.order,
+        layout: (img.layout as "wide" | "column") ?? "column",
       }))
     );
     setError("");
@@ -130,6 +143,7 @@ export default function AdminDashboard() {
         url: img.url,
         altText: img.altText || null,
         order: i,
+        layout: img.layout,
       })),
     };
 
@@ -188,23 +202,28 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#f8f8f8]">
       {/* Top bar */}
       <header className="bg-white border-b border-border sticky top-0 z-10">
-        <div className="flex items-center justify-between px-6 md:px-8 py-4 max-w-6xl mx-auto">
+        <div className="flex items-center justify-between py-4 max-w-6xl mx-auto" style={{ paddingLeft: "48px", paddingRight: "48px" }}>
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-bold text-foreground">Portfolio Admin</h1>
             <span className="text-sm text-muted">
               {view === "list" ? "" : editingId ? "/ Edit Project" : "/ New Project"}
             </span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-muted hover:text-foreground transition-colors"
-          >
-            Sign Out
-          </button>
+          <div className="flex items-center gap-6">
+            <span className="text-sm text-muted">
+              {projects.length} {projects.length === 1 ? "project" : "projects"}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-muted hover:text-foreground transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
-      <div className="px-6 md:px-8 py-8 max-w-6xl mx-auto">
+      <div className="py-8 max-w-6xl mx-auto" style={{ paddingLeft: "48px", paddingRight: "48px" }}>
         {/* Notifications */}
         {error && (
           <div className="mb-6 flex items-center justify-between bg-red-50 border border-red-200 rounded-lg px-4 py-3">
@@ -225,6 +244,7 @@ export default function AdminDashboard() {
             onEdit={openEdit}
             onDelete={(id) => setDeleteConfirm(id)}
             onCreate={openCreate}
+            onReorder={handleReorder}
             deleteConfirm={deleteConfirm}
             onDeleteConfirm={handleDelete}
             onDeleteCancel={() => setDeleteConfirm(null)}
@@ -253,6 +273,7 @@ function ProjectList({
   onEdit,
   onDelete,
   onCreate,
+  onReorder,
   deleteConfirm,
   onDeleteConfirm,
   onDeleteCancel,
@@ -262,47 +283,51 @@ function ProjectList({
   onEdit: (p: Project) => void;
   onDelete: (id: string) => void;
   onCreate: () => void;
+  onReorder: (projects: Project[]) => void;
   deleteConfirm: string | null;
   onDeleteConfirm: (id: string) => void;
   onDeleteCancel: () => void;
 }) {
+  const dragItem = useRef<number | null>(null);
+  const dragOver = useRef<number | null>(null);
+  const [dragging, setDragging] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  function handleDragStart(index: number) {
+    dragItem.current = index;
+    setDragging(index);
+  }
+
+  function handleDragEnter(index: number) {
+    dragOver.current = index;
+    setDragOverIdx(index);
+  }
+
+  function handleDragEnd() {
+    if (dragItem.current === null || dragOver.current === null) {
+      setDragging(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const next = [...projects];
+    const [dragged] = next.splice(dragItem.current, 1);
+    next.splice(dragOver.current, 0, dragged);
+    dragItem.current = null;
+    dragOver.current = null;
+    setDragging(null);
+    setDragOverIdx(null);
+    onReorder(next);
+  }
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-foreground">Your Projects</h2>
-          <p className="text-sm text-muted mt-1">
-            {projects.length} project{projects.length !== 1 && "s"} in your portfolio
-          </p>
-        </div>
+      <div className="mb-6">
         <button
           onClick={onCreate}
           className="flex items-center gap-2 bg-foreground text-background font-semibold text-sm rounded-lg px-5 py-2.5 hover:opacity-90 transition-opacity"
         >
           <span className="text-lg leading-none">+</span> New Project
         </button>
-      </div>
-
-      {/* Cover Aspect Ratios Reference */}
-      <div className="bg-white rounded-xl border border-border p-5 mb-6">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Cover Image Aspect Ratios</h3>
-        <p className="text-xs text-muted mb-3">Each project position on the Work page uses a different ratio. The pattern repeats every 6 projects.</p>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-          {[
-            { pos: 1, ratio: "3:4", desc: "Portrait" },
-            { pos: 2, ratio: "4:5", desc: "Tall" },
-            { pos: 3, ratio: "1:1", desc: "Square" },
-            { pos: 4, ratio: "3:4", desc: "Portrait" },
-            { pos: 5, ratio: "4:3", desc: "Landscape" },
-            { pos: 6, ratio: "3:4", desc: "Portrait" },
-          ].map((item) => (
-            <div key={item.pos} className="text-center bg-[#f8f8f8] rounded-lg p-3">
-              <span className="text-xs text-muted">#{item.pos}</span>
-              <p className="text-sm font-bold text-foreground">{item.ratio}</p>
-              <span className="text-xs text-muted">{item.desc}</span>
-            </div>
-          ))}
-        </div>
       </div>
 
       {loading ? (
@@ -322,21 +347,45 @@ function ProjectList({
           </button>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {projects.map((project) => (
+        <div className="grid" style={{ gap: "24px" }}>
+          {projects.map((project, i) => (
             <div
               key={project.id}
-              className="bg-white rounded-xl border border-border p-5 flex items-center gap-5 hover:shadow-sm transition-shadow"
+              draggable
+              onDragStart={() => handleDragStart(i)}
+              onDragEnter={() => handleDragEnter(i)}
+              onDragEnd={handleDragEnd}
+              onDragOver={(e) => e.preventDefault()}
+              className={`bg-white rounded-xl border flex items-center transition-all ${
+                dragging === i
+                  ? "opacity-40 border-foreground/30"
+                  : dragOverIdx === i && dragging !== null
+                  ? "border-foreground/40 shadow-md"
+                  : "border-border hover:shadow-sm"
+              }`}
+              style={{ padding: "24px", gap: "24px" }}
             >
+              {/* Drag handle */}
+              <div className="cursor-grab active:cursor-grabbing text-muted hover:text-foreground transition-colors select-none shrink-0">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <circle cx="4" cy="3" r="1.5" />
+                  <circle cx="12" cy="3" r="1.5" />
+                  <circle cx="4" cy="8" r="1.5" />
+                  <circle cx="12" cy="8" r="1.5" />
+                  <circle cx="4" cy="13" r="1.5" />
+                  <circle cx="12" cy="13" r="1.5" />
+                </svg>
+              </div>
+
               {/* Thumbnail */}
               {project.coverImage ? (
                 <img
                   src={project.coverImage}
                   alt={project.title}
-                  className="w-20 h-20 rounded-lg object-cover shrink-0"
+                  className="w-24 h-24 rounded-lg object-cover shrink-0"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-lg bg-[#f0f0ee] shrink-0 flex items-center justify-center">
+                <div className="w-24 h-24 rounded-lg bg-[#f0f0ee] shrink-0 flex items-center justify-center">
                   <span className="text-2xl">🖼</span>
                 </div>
               )}
@@ -346,11 +395,10 @@ function ProjectList({
                 <h3 className="text-base font-semibold text-foreground truncate">
                   {project.title}
                 </h3>
-                <p className="text-sm text-muted mt-1">
-                  {project.client ?? "Personal"}
-                  {project.category && ` · ${project.category}`}
+                <p className="text-sm text-muted" style={{ marginTop: "8px" }}>
+                  {project.description ?? project.client ?? ""}
                 </p>
-                <p className="text-xs text-muted/60 mt-1">
+                <p className="text-xs text-muted/60" style={{ marginTop: "8px" }}>
                   {project.images.length} photo{project.images.length !== 1 && "s"}
                   {project.date && ` · ${new Date(project.date).toLocaleDateString("en-US", { year: "numeric", month: "short" })}`}
                 </p>
@@ -426,8 +474,10 @@ function ProjectForm({
 
   function updateField(field: string, value: string) {
     const next = { ...form, [field]: value };
-    if (field === "title" && !isEditing) {
-      next.slug = slugify(value);
+    if (!isEditing && (field === "title" || field === "description")) {
+      const title = field === "title" ? value : form.title;
+      const subtitle = field === "description" ? value : form.description;
+      next.slug = slugify(subtitle ? `${title} ${subtitle}` : title);
     }
     setForm(next);
   }
@@ -459,6 +509,7 @@ function ProjectForm({
           url,
           altText: file.name.replace(/\.[^.]+$/, ""),
           order: images.length + newImages.length,
+          layout: "column",
         });
       }
       setImages([...images, ...newImages]);
@@ -470,9 +521,15 @@ function ProjectForm({
     }
   }
 
-  function updateImage(index: number, field: "url" | "altText", value: string) {
+  function updateImage(index: number, field: "url" | "altText" | "layout", value: string) {
     const next = [...images];
     next[index] = { ...next[index], [field]: value };
+    setImages(next);
+  }
+
+  function toggleLayout(index: number) {
+    const next = [...images];
+    next[index] = { ...next[index], layout: next[index].layout === "wide" ? "column" : "wide" };
     setImages(next);
   }
 
@@ -488,28 +545,45 @@ function ProjectForm({
 
   return (
     <div>
-      {/* Back button */}
-      <button
-        onClick={onCancel}
-        className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors mb-6"
-      >
-        ← Back to Projects
-      </button>
+      {/* Top bar with back button and save button */}
+      <div className="flex items-center justify-between mb-8">
+        <button
+          onClick={onCancel}
+          className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+        >
+          ← Back to Projects
+        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onSave}
+            disabled={saving || uploading || !form.title || !form.slug}
+            className="bg-foreground text-background font-semibold text-sm rounded-lg px-8 py-2.5 hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {saving ? "Saving..." : isEditing ? "Save Changes" : "Create Project"}
+          </button>
+          <button
+            onClick={onCancel}
+            className="text-sm text-muted hover:text-foreground transition-colors px-4 py-2.5"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
 
       {/* Upload indicator */}
       {uploading && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+        <div className="mb-8 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
           <span className="text-sm text-blue-600">Uploading image...</span>
         </div>
       )}
 
       {/* Project Details Card */}
-      <div className="bg-white rounded-xl border border-border p-6 md:p-8 mb-6">
-        <h2 className="text-lg font-bold text-foreground mb-6">
+      <div className="bg-white rounded-xl border border-border p-6 md:p-8 mb-8">
+        <h2 className="text-lg font-bold text-foreground mb-8">
           {isEditing ? "Edit Project" : "New Project"}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
           <InputField
             label="Project Title"
             required
@@ -532,12 +606,6 @@ function ProjectForm({
             placeholder="e.g. Vogue Italia (or leave empty for Personal)"
           />
           <InputField
-            label="Category"
-            value={form.category}
-            onChange={(v) => updateField("category", v)}
-            placeholder="e.g. Editorial, Fashion, Personal"
-          />
-          <InputField
             label="Date"
             type="date"
             value={form.date}
@@ -546,27 +614,22 @@ function ProjectForm({
           <div /> {/* spacer */}
         </div>
 
-        <div className="mt-5">
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Description
-          </label>
-          <textarea
+        <div className="mt-8">
+          <InputField
+            label="Subtitle"
             value={form.description}
-            onChange={(e) => updateField("description", e.target.value)}
-            rows={3}
-            className="w-full bg-white border border-border rounded-lg px-4 py-3 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10 transition-all resize-none"
-            placeholder="Describe the project..."
+            onChange={(v) => updateField("description", v)}
+            placeholder="e.g. FW 2019, Spring Campaign, Personal Work"
           />
         </div>
       </div>
 
       {/* Cover Image Card */}
-      <div className="bg-white rounded-xl border border-border p-6 md:p-8 mb-6">
-        <h2 className="text-lg font-bold text-foreground mb-2">Cover Image</h2>
-        <p className="text-sm text-muted mb-5">This is the main image shown on the Work page grid.</p>
+      <div className="bg-white rounded-xl border border-border p-6 md:p-8 mb-8">
+        <h2 className="text-lg font-bold text-foreground mb-6">Cover Image</h2>
 
         {form.coverImage ? (
-          <div className="mb-4">
+          <div className="mb-6">
             <img
               src={form.coverImage}
               alt="Cover preview"
@@ -613,45 +676,18 @@ function ProjectForm({
       </div>
 
       {/* Gallery Images Card */}
-      <div className="bg-white rounded-xl border border-border p-6 md:p-8 mb-6">
-        <div className="flex items-center justify-between mb-2">
+      <div className="bg-white rounded-xl border border-border p-6 md:p-8 mb-8">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-foreground">Gallery Images</h2>
-          <span className="text-sm text-muted">{images.length} photo{images.length !== 1 && "s"}</span>
-        </div>
-        <p className="text-sm text-muted mb-4">
-          These images appear on the project detail page. Drag to reorder.
-        </p>
-        <div className="bg-[#f8f8f8] rounded-lg p-4 mb-5">
-          <p className="text-xs font-semibold text-foreground mb-2">Gallery Layout Pattern</p>
-          <p className="text-xs text-muted mb-2">The layout repeats every 5 images:</p>
-          <div className="grid grid-cols-5 gap-2">
-            <div className="text-center bg-white rounded p-2 col-span-5">
-              <p className="text-xs font-bold text-foreground">Image #1 — Wide</p>
-              <span className="text-xs text-muted">16:9 (landscape, spans full width)</span>
-            </div>
-            <div className="text-center bg-white rounded p-2 col-span-2">
-              <p className="text-xs font-bold text-foreground">#2 — Column</p>
-              <span className="text-xs text-muted">3:4 (portrait)</span>
-            </div>
-            <div className="text-center bg-white rounded p-2 col-span-1" />
-            <div className="text-center bg-white rounded p-2 col-span-2">
-              <p className="text-xs font-bold text-foreground">#3 — Column</p>
-              <span className="text-xs text-muted">3:4 (portrait)</span>
-            </div>
-            <div className="text-center bg-white rounded p-2 col-span-2">
-              <p className="text-xs font-bold text-foreground">#4 — Column</p>
-              <span className="text-xs text-muted">3:4 (portrait)</span>
-            </div>
-            <div className="text-center bg-white rounded p-2 col-span-1" />
-            <div className="text-center bg-white rounded p-2 col-span-2">
-              <p className="text-xs font-bold text-foreground">#5 — Column</p>
-              <span className="text-xs text-muted">3:4 (portrait)</span>
-            </div>
-            <div className="text-center bg-white rounded p-2 col-span-5">
-              <p className="text-xs font-bold text-foreground">Image #6 — Wide (repeats)</p>
-              <span className="text-xs text-muted">16:9 (landscape, spans full width)</span>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => galleryInputRef.current?.click()}
+            disabled={uploading}
+            className="text-xl font-bold text-muted hover:text-foreground bg-[#f5f5f3] hover:bg-[#eaeaea] rounded-lg transition-colors disabled:opacity-30"
+            style={{ width: "36px", height: "36px", lineHeight: "1" }}
+          >
+            +
+          </button>
         </div>
 
         {images.length === 0 ? (
@@ -669,24 +705,13 @@ function ProjectForm({
             </button>
           </div>
         ) : (
-          <>
-            <ImageList
-              images={images}
-              onChange={setImages}
-              onUpdate={updateImage}
-              onRemove={removeImage}
-            />
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={() => galleryInputRef.current?.click()}
-                disabled={uploading}
-                className="text-sm font-medium bg-[#f5f5f3] hover:bg-[#eaeaea] rounded-lg px-4 py-2 transition-colors disabled:opacity-30"
-              >
-                + Add More Images
-              </button>
-            </div>
-          </>
+          <ImageList
+            images={images}
+            onChange={setImages}
+            onUpdate={updateImage}
+            onRemove={removeImage}
+            onToggleLayout={toggleLayout}
+          />
         )}
         <input
           ref={galleryInputRef}
@@ -697,41 +722,23 @@ function ProjectForm({
           className="hidden"
         />
       </div>
-
-      {/* Save / Cancel */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onSave}
-          disabled={saving || uploading || !form.title || !form.slug}
-          className="bg-foreground text-background font-semibold text-sm rounded-lg px-8 py-3 hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          {saving ? "Saving..." : isEditing ? "Save Changes" : "Create Project"}
-        </button>
-        <button
-          onClick={onCancel}
-          className="text-sm text-muted hover:text-foreground transition-colors px-4 py-3"
-        >
-          Cancel
-        </button>
-      </div>
     </div>
   );
 }
 
-function getLayoutLabel(index: number): string {
-  return index % 5 === 0 ? "Wide (16:9)" : "Column (3:4)";
-}
 
 function ImageList({
   images,
   onChange,
   onUpdate,
   onRemove,
+  onToggleLayout,
 }: {
   images: GalleryImage[];
   onChange: (imgs: GalleryImage[]) => void;
-  onUpdate: (i: number, field: "url" | "altText", value: string) => void;
+  onUpdate: (i: number, field: "url" | "altText" | "layout", value: string) => void;
   onRemove: (i: number) => void;
+  onToggleLayout: (i: number) => void;
 }) {
   const dragItem = useRef<number | null>(null);
   const dragOver = useRef<number | null>(null);
@@ -765,7 +772,7 @@ function ImageList({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {images.map((img, i) => (
         <div
           key={i}
@@ -774,7 +781,7 @@ function ImageList({
           onDragEnter={() => handleDragEnter(i)}
           onDragEnd={handleDragEnd}
           onDragOver={(e) => e.preventDefault()}
-          className={`flex items-center gap-4 p-3 rounded-lg border transition-all ${
+          className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${
             dragging === i
               ? "opacity-40 border-foreground/30 bg-[#f0f0ee]"
               : dragOverIdx === i && dragging !== null
@@ -809,13 +816,17 @@ function ImageList({
           {/* Info + caption */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                i % 5 === 0
-                  ? "bg-blue-50 text-blue-600"
-                  : "bg-[#f5f5f3] text-foreground/60"
-              }`}>
-                {getLayoutLabel(i)}
-              </span>
+              <button
+                type="button"
+                onClick={() => onToggleLayout(i)}
+                className={`text-xs font-semibold px-2 py-0.5 rounded transition-colors ${
+                  img.layout === "wide"
+                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                    : "bg-[#f5f5f3] text-foreground/60 hover:bg-[#eaeaea]"
+                }`}
+              >
+                {img.layout === "wide" ? "Wide" : "Column"}
+              </button>
             </div>
             <input
               type="text"

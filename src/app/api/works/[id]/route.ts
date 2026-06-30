@@ -69,10 +69,11 @@ export async function PUT(
         slug,
         images: {
           create: Array.isArray(images)
-            ? images.map((img: { url: string; altText?: string; order?: number }, i: number) => ({
+            ? images.map((img: { url: string; altText?: string; order?: number; layout?: string }, i: number) => ({
                 url: img.url,
                 altText: img.altText || null,
                 order: img.order ?? i,
+                layout: img.layout || "column",
               }))
             : [],
         },
@@ -81,7 +82,8 @@ export async function PUT(
     });
 
     return NextResponse.json(project);
-  } catch {
+  } catch (err) {
+    console.error("PUT /api/works/[id] error:", err);
     return NextResponse.json(
       { error: "Failed to update project" },
       { status: 500 }

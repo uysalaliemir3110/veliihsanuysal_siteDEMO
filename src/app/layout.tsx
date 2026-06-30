@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Open_Sans } from "next/font/google";
 import Nav from "./nav";
 import BackToTop from "./back-to-top";
@@ -12,6 +12,11 @@ const openSans = Open_Sans({
 export const metadata: Metadata = {
   title: "Veli̇ İhsan Uysal — Photography",
   description: "Editorial and fashion photography portfolio",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 function Footer() {
@@ -34,9 +39,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`h-full antialiased ${openSans.variable}`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Nav />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <span id="top" aria-hidden="true" />
+        {children}
         <BackToTop />
       </body>
     </html>

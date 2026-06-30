@@ -10,7 +10,7 @@ export async function GET() {
 
   const projects = await prisma.project.findMany({
     include: { images: { orderBy: { order: "asc" } } },
-    orderBy: { createdAt: "desc" },
+    orderBy: { order: "asc" },
   });
 
   return NextResponse.json(projects);
@@ -42,6 +42,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const lastProject = await prisma.project.findFirst({ orderBy: { order: "desc" } });
+    const nextOrder = lastProject ? lastProject.order + 1 : 0;
+
     const project = await prisma.project.create({
       data: {
         title,
@@ -51,12 +54,14 @@ export async function POST(request: NextRequest) {
         coverImage: coverImage || null,
         date: date ? new Date(date) : null,
         slug,
+        order: nextOrder,
         images: {
           create: Array.isArray(images)
-            ? images.map((img: { url: string; altText?: string; order?: number }, i: number) => ({
+            ? images.map((img: { url: string; altText?: string; order?: number; layout?: string }, i: number) => ({
                 url: img.url,
                 altText: img.altText || null,
                 order: img.order ?? i,
+                layout: img.layout || "column",
               }))
             : [],
         },

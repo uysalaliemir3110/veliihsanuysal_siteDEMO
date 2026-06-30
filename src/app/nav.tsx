@@ -9,11 +9,23 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-function NavContent() {
+function NavContent({ toggleId }: { toggleId: string }) {
   const pathname = usePathname();
 
+  function isLinkActive(href: string) {
+    return href === "/"
+      ? pathname === "/" || pathname.startsWith("/works")
+      : pathname.startsWith(href);
+  }
+
   return (
-    <nav style={{ paddingLeft: "28px", paddingRight: "28px" }} className="py-4">
+    <nav
+      className="py-4 nav-inner"
+      style={{ paddingLeft: "28px", paddingRight: "28px", position: "relative" }}
+    >
+      {/* Pure-CSS toggle: tapping the plus (a label) flips this checkbox */}
+      <input type="checkbox" id={toggleId} className="nav-toggle-checkbox" />
+
       <div className="flex items-center justify-between">
         <Link
           href="/"
@@ -21,17 +33,16 @@ function NavContent() {
         >
           Veli̇ İhsan Uysal
         </Link>
+
         <div className="flex items-center gap-10">
+          {/* Desktop inline links — hidden on mobile via CSS */}
           {links.map((link) => {
-            const isActive =
-              link.href === "/"
-                ? pathname === "/" || pathname.startsWith("/works")
-                : pathname.startsWith(link.href);
+            const isActive = isLinkActive(link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-[13px] md:text-[15px] tracking-[0.12em] uppercase font-bold transition-opacity duration-300 ${
+                className={`nav-desktop-link text-[13px] md:text-[15px] tracking-[0.12em] uppercase font-bold transition-opacity duration-300 ${
                   isActive
                     ? "text-foreground opacity-100"
                     : "text-foreground opacity-25 hover:opacity-60"
@@ -41,6 +52,8 @@ function NavContent() {
               </Link>
             );
           })}
+
+          {/* Instagram — always visible */}
           <a
             href="https://instagram.com/veliihsanuysalphotography"
             target="_blank"
@@ -63,7 +76,47 @@ function NavContent() {
               <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
             </svg>
           </a>
+
+          {/* Mobile plus — a label that toggles the checkbox (no JS) */}
+          <label
+            htmlFor={toggleId}
+            aria-label="Menu"
+            className="nav-mobile-plus text-foreground opacity-100 hover:opacity-60 transition-opacity duration-300"
+            style={{ padding: "6px" }}
+          >
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </label>
         </div>
+      </div>
+
+      {/* Mobile dropdown panel — full width below the bar, shown via CSS when checked */}
+      <div className="nav-mobile-panel">
+        {links.map((link) => {
+          const isActive = isLinkActive(link.href);
+          return (
+            <a
+              key={link.href}
+              href={link.href}
+              className={`block text-[16px] tracking-[0.12em] uppercase font-bold ${
+                isActive ? "opacity-100" : "opacity-40"
+              }`}
+              style={{ padding: "16px 28px" }}
+            >
+              {link.label}
+            </a>
+          );
+        })}
       </div>
     </nav>
   );
@@ -93,12 +146,12 @@ export default function Nav() {
         style={{ marginTop: "8px", marginBottom: "8px" }}
         className={sticky ? "invisible" : ""}
       >
-        <NavContent />
+        <NavContent toggleId="nav-toggle-static" />
       </header>
 
       {sticky && (
         <header className="fixed top-0 left-0 right-0 z-50 animate-fade-up">
-          <NavContent />
+          <NavContent toggleId="nav-toggle-sticky" />
         </header>
       )}
     </>
