@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "@/lib/auth";
-import { writeFile } from "fs/promises";
-import { join } from "path";
 import { randomBytes } from "crypto";
 import sharp from "sharp";
 
@@ -29,19 +27,30 @@ export async function POST(request: NextRequest) {
 
     const bytes = Buffer.from(await file.arrayBuffer());
     const safeName = `${Date.now()}-${randomBytes(6).toString("hex")}.webp`;
-    const uploadDir = join(process.cwd(), "public", "uploads");
 
-    // Resize to max 2400px on longest side, convert to WebP at 82% quality
-    await sharp(bytes)
+    // Compress: resize to max 2400px, convert to WebP at 82% quality
+    const compressed = await sharp(bytes)
       .resize(2400, 2400, { fit: "inside", withoutEnlargement: true })
       .webp({ quality: 82 })
-      .toFile(join(uploadDir, safeName));
+      .toBuffer();
 
+    // Production (Vercel): upload to Vercel Blob
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const { put } = await import("@vercel/blob");
+      const blob = await put(`uploads/${safeName}`, compressed, {
+        access: "public",
+        contentType: "image/webp",
+      });
+      return NextResponse.json({ url: blob.url });
+    }
+
+    // Development: save to local public/uploads/
+    const { writeFile } = await import("fs/promises");
+    const { join } = await import("path");
+    const uploadDir = join(process.cwd(), "public", "uploads");
+    await writeFile(join(uploadDir, safeName), compressed);
     return NextResponse.json({ url: `/uploads/${safeName}` });
   } catch {
-    return NextResponse.json(
-      { error: "Upload failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
