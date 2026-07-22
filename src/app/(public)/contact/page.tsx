@@ -8,10 +8,10 @@ export default function ContactPage() {
             Email
           </p>
           <a
-            href="mailto:v.ihsanuysal@gmail.com"
+            href="mailto:hello@example.com"
             className="text-xl md:text-4xl lg:text-5xl font-bold leading-[1.2] hover:opacity-50 transition-opacity duration-300"
           >
-            v.ihsanuysal@gmail.com
+            hello@example.com
           </a>
         </div>
 
@@ -21,10 +21,10 @@ export default function ContactPage() {
             Phone
           </p>
           <a
-            href="tel:+905322836172"
+            href="tel:+000000000000"
             className="text-xl md:text-4xl lg:text-5xl font-bold leading-[1.2] hover:opacity-50 transition-opacity duration-300"
           >
-            +90 532 283 61 72
+            +00 000 000 0000
           </a>
         </div>
 
@@ -34,12 +34,12 @@ export default function ContactPage() {
             Instagram
           </p>
           <a
-            href="https://instagram.com/veliihsanuysalphotography"
+            href="https://instagram.com/studio.placeholder"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xl md:text-4xl lg:text-5xl font-bold leading-[1.2] hover:opacity-50 transition-opacity duration-300"
           >
-            @veliihsanuysalphotography
+            @studio.placeholder
           </a>
         </div>
 
@@ -49,10 +49,10 @@ export default function ContactPage() {
             Studio
           </p>
           <p className="text-xl md:text-4xl lg:text-5xl font-bold leading-[1.3]">
-            İstiklal Avenue<br />
-            Turnacıbaşı Street<br />
-            No:3/1 Beyoğlu<br />
-            İstanbul Türkiye
+            123 Example Street<br />
+            Suite 100<br />
+            City Center<br />
+            Country
           </p>
         </div>
       </div>

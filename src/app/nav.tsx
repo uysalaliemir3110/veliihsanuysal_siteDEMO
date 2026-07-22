@@ -55,7 +55,7 @@ function NavContent({ toggleId }: { toggleId: string }) {
 
           {/* Instagram — always visible */}
           <a
-            href="https://instagram.com/veliihsanuysalphotography"
+            href="https://instagram.com/studio.placeholder"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
