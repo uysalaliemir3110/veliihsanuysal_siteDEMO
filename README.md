@@ -1,12 +1,12 @@
 # Photography Portfolio — Full-Stack Web Application
 
-> **🇬🇧 English** · [🇫🇷 Français](#-français)
+> **English** · [Français](#français)
 
 A full-stack editorial & fashion photography portfolio with a custom content-management admin panel, built from scratch with Next.js, TypeScript, Prisma, and a serverless SQLite (Turso) database.
 
-**🔗 Live demo:** https://veliihsanuysal-demo.vercel.app
+**Live demo:** https://veliihsanuysal-demo.vercel.app
 
-### 🔑 Admin panel access (for reviewers)
+### Admin panel access (for reviewers)
 
 The site includes a private admin panel for managing projects and images. You are welcome to explore it:
 
@@ -17,13 +17,13 @@ The site includes a private admin panel for managing projects and images. You ar
 
 ---
 
-### 👤 About this project
+### About this project
 
 I designed and developed this website end-to-end as the sole developer — front-end, back-end, database, authentication, and deployment. It was originally built in a separate private Git repository and later pushed to this account to share as part of my university application portfolio.
 
 The photographs shown are used **with the photographer's permission**; the codebase and application architecture are my own work.
 
-### 🛠️ Tech stack
+### Tech stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -36,7 +36,7 @@ The photographs shown are used **with the photographer's permission**; the codeb
 | Image storage | [Vercel Blob](https://vercel.com/docs/vercel-blob) |
 | Hosting | [Vercel](https://vercel.com) (CI/CD from Git) |
 
-### ✨ Features
+### Features
 
 - **Responsive public portfolio** — a work grid, per-project gallery pages with configurable image layouts (column / wide), a contact page, and mobile navigation.
 - **Custom admin CMS** — password-protected dashboard to create, edit, reorder, and delete projects and gallery images. No third-party CMS.
@@ -45,7 +45,7 @@ The photographs shown are used **with the photographer's permission**; the codeb
 - **RESTful API routes** — clean `/api` endpoints for auth, projects, works, uploads, and reordering.
 - **Type-safe data layer** — end-to-end types from the database through Prisma to the React components.
 
-### 🏗️ Architecture
+### Architecture
 
 ```
 src/
@@ -60,7 +60,7 @@ prisma/
 └── migrations/            # SQL migrations
 ```
 
-### ▶️ Running locally
+### Running locally
 
 ```bash
 npm install
@@ -80,15 +80,15 @@ JWT_SECRET="..."                  # session signing secret
 ---
 ---
 
-## 🇫🇷 Français
+## Français
 
-> [🇬🇧 English](#photography-portfolio--full-stack-web-application) · **🇫🇷 Français**
+> [English](#photography-portfolio--full-stack-web-application) · **Français**
 
 Un portfolio de photographie éditoriale et de mode *full-stack*, doté d'un panneau d'administration sur mesure pour la gestion de contenu, développé entièrement avec Next.js, TypeScript, Prisma et une base de données SQLite *serverless* (Turso).
 
-**🔗 Démo en ligne :** https://veliihsanuysal-demo.vercel.app
+**Démo en ligne :** https://veliihsanuysal-demo.vercel.app
 
-### 🔑 Accès au panneau d'administration (pour les évaluateurs)
+### Accès au panneau d'administration (pour les évaluateurs)
 
 Le site comprend un panneau d'administration privé permettant de gérer les projets et les images. Vous êtes invité·e à l'explorer :
 
@@ -99,13 +99,13 @@ Le site comprend un panneau d'administration privé permettant de gérer les pro
 
 ---
 
-### 👤 À propos du projet
+### À propos du projet
 
 J'ai conçu et développé ce site de bout en bout en tant que seul développeur — interface, back-end, base de données, authentification et déploiement. Il a d'abord été créé dans un dépôt Git privé distinct, puis transféré vers ce compte afin de l'intégrer à mon dossier de candidature universitaire.
 
 Les photographies présentées sont utilisées **avec l'autorisation du photographe** ; le code et l'architecture de l'application sont mon propre travail.
 
-### 🛠️ Technologies
+### Technologies
 
 | Couche | Technologie |
 |--------|-------------|
@@ -118,7 +118,7 @@ Les photographies présentées sont utilisées **avec l'autorisation du photogra
 | Stockage d'images | [Vercel Blob](https://vercel.com/docs/vercel-blob) |
 | Hébergement | [Vercel](https://vercel.com) (CI/CD depuis Git) |
 
-### ✨ Fonctionnalités
+### Fonctionnalités
 
 - **Portfolio public responsive** — grille de projets, pages galerie par projet avec mises en page configurables (colonne / pleine largeur), page de contact et navigation mobile.
 - **CMS d'administration sur mesure** — tableau de bord protégé par mot de passe pour créer, modifier, réordonner et supprimer projets et images. Aucun CMS tiers.
@@ -127,7 +127,7 @@ Les photographies présentées sont utilisées **avec l'autorisation du photogra
 - **Routes API RESTful** — points d'accès `/api` clairs pour l'authentification, les projets, les œuvres, les téléversements et le réordonnancement.
 - **Couche de données typée** — types de bout en bout, de la base de données jusqu'aux composants React via Prisma.
 
-### 🏗️ Architecture
+### Architecture
 
 ```
 src/
@@ -142,7 +142,7 @@ prisma/
 └── migrations/            # Migrations SQL
 ```
 
-### ▶️ Exécution en local
+### Exécution en local
 
 ```bash
 npm install
