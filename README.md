@@ -19,7 +19,9 @@ The site includes a private admin panel for managing projects and images. You ar
 
 ### About this project
 
-I designed and developed this website end-to-end as the sole developer — front-end, back-end, database, authentication, and deployment. It was originally built in a separate private Git repository and later pushed to this account to share as part of my university application portfolio.
+I designed and developed this website end-to-end as the sole developer — front-end, back-end, database, authentication, and deployment.
+
+This project was originally developed for a family business/client and was initially hosted under another GitHub account. I was the primary developer and have mirrored the code here for my portfolio.
 
 The photographs shown are used **with the photographer's permission**; the codebase and application architecture are my own work.
 
@@ -101,7 +103,9 @@ Le site comprend un panneau d'administration privé permettant de gérer les pro
 
 ### À propos du projet
 
-J'ai conçu et développé ce site de bout en bout en tant que seul développeur — interface, back-end, base de données, authentification et déploiement. Il a d'abord été créé dans un dépôt Git privé distinct, puis transféré vers ce compte afin de l'intégrer à mon dossier de candidature universitaire.
+J'ai conçu et développé ce site de bout en bout en tant que seul développeur — interface, back-end, base de données, authentification et déploiement.
+
+Ce projet a été développé à l'origine pour une entreprise ou un client familial et était initialement hébergé sous un autre compte GitHub. J'en étais le développeur principal et j'ai copié le code ici pour mon portfolio.
 
 Les photographies présentées sont utilisées **avec l'autorisation du photographe** ; le code et l'architecture de l'application sont mon propre travail.
 
